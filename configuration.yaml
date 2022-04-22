@@ -1,0 +1,330 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+zone:
+  - name: Home
+    latitude: !secret lat_home
+    longitude: !secret long_home
+    radius: 25
+    icon: mdi:home-assistant
+
+#http settings for Cloudflare
+http:
+  server_port: !secret ha_port
+#  ssl_certificate: /ssl/origin.pem
+#  ssl_key: /ssl/privkey.pem
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 173.245.48.0/20   # Cloudflare IP Ranges derived from https://www.cloudflare.com/de-de/ips/
+    - 103.21.244.0/22
+    - 103.22.200.0/22
+    - 103.31.4.0/22
+    - 141.101.64.0/18
+    - 108.162.192.0/18
+    - 190.93.240.0/20
+    - 188.114.96.0/20
+    - 197.234.240.0/22
+    - 198.41.128.0/17
+    - 162.158.0.0/15
+    - 172.64.0.0/13
+    - 131.0.72.0/22
+    - 104.16.0.0/13
+    - 104.24.0.0/14
+    - 192.168.1.0/24     # local LAN Ritter3
+
+# Text to speech
+tts:
+  - platform: google_translate
+    cache: true
+    base_url: !secret tts_url
+    service_name: google_say
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+cover: !include covers.yaml
+
+logger:
+  default: info
+
+binary_sensor:
+  - platform: workday #specifies a sensor for workdays which will be off on holidays
+    country: AT 
+    province: !secret province
+  - platform: template
+    sensors:
+      night_time:
+        friendly_name: Nachtstunden
+        icon_template: "mdi:weather-sunny"
+        value_template: '{{ state_attr("sun.sun", "elevation") | float < 6 }}'
+   
+    
+####################################
+#
+#  Integrations used
+#
+####################################
+#
+
+#Elero integration for controlling shutters and venetian blends via Home Assistant from https://github.com/W00D00/home-assistant-elero
+elero:
+    transmitters:
+        - serial_number: AU00JJS2
+          baudrate: 38400
+          bytesize: 8
+          parity: 'N'
+          stopbits: 1
+
+#Synology CalDAV for calendars
+calendar:
+  - platform: caldav
+    username: !secret caldav_user
+    password: !secret caldav_pw
+    url: !secret caldav_url
+    
+sensor:
+# Fronius Integration from https://github.com/safepay/sensor.fronius/tree/v0.9.4
+#  - platform: fronius_inverter  
+#    ip_address: 192.168.1.75
+#    powerflow: true
+#    smartmeter: true
+#    units: kWh
+#    power_units: kW
+#    scope: Device
+################ corresponding template sensors for Fronius Integration to avoid the sensors becoming "unavailable" during night time #######
+  - platform: template
+    sensors:
+      panel_status_utilization:
+        friendly_name: Verwendungsstatus Solarpanele
+        unit_of_measurement: '%'
+        value_template: >-
+                        {% if states ('sensor.power_photovoltaics_fronius_power_flow_0_192_168_1_75') is defined  %}
+                            {{ ((states ('sensor.power_photovoltaics_fronius_power_flow_0_192_168_1_75') | float) / 3050 * 100) | round(1) }}  
+                        {% else %} 
+                          {{ 0 | float }}
+                        {% endif %}
+      house_consumption_total:
+        friendly_name: aktueller Gesamtverbrauch
+        unit_of_measurement: 'W'
+        value_template: >- 
+                        {% if states ('sensor.power_load_fronius_power_flow_0_192_168_1_75') is defined | float > 0 %}
+                          {{ states ('sensor.power_load_fronius_power_flow_0_192_168_1_75') | float | round(2) | abs }}
+                        {%- else -%}
+                          {{ 0 | float }}
+                        {%- endif -%}
+      energy_flowing_to_grid:
+        friendly_name: aktuelle Einspeisung
+        unit_of_measurement: 'W'
+        value_template: >-
+                        {% if states ('sensor.power_grid_fronius_power_flow_0_192_168_1_75') is defined | float > 0 %}
+                            {{ states ('sensor.power_grid_fronius_power_flow_0_192_168_1_75') | float | round(2) }}  
+                        {% else %} 
+                          {{ 0 | float }}
+                        {% endif %}
+#
+# WienerLinien Integration via HACS from https://github.com/custom-components/wienerlinien   
+  - platform: wienerlinien 
+    stops:
+      - !secret station_a
+      - !secret station_b
+      - !secret station_c
+      - !secret station_d
+      - !secret station_e
+    firstnext: first
+  - platform: wienerlinien 
+    stops:
+      - !secret station_a
+      - !secret station_b
+      - !secret station_c
+      - !secret station_d
+      - !secret station_e
+    firstnext: next
+    
+#Unifi Controller Health Status
+  - platform: unifigateway
+    host: !secret unifi_host
+    port: !secret unifi_port
+    username: !secret unifi_user
+    password: !secret unifi_pw
+    monitored_conditions:
+      - www
+      - wlan
+      - alerts
+      - firmware
+
+  - platform: uptime #for calculating Home Assistant Uptime stats
+    name: HomeAssistant Uptime
+  - platform: systemmonitor #for monitoring Raspberry PI system health
+    resources:
+          - type: disk_use_percent
+            arg: /home
+          - type: memory_use_percent
+          - type: memory_use
+          - type: load_1m
+          - type: load_5m
+          - type: load_15m
+          - type: memory_free
+          - type: last_boot
+          - type: processor_use
+          - type: network_in
+            arg: eth0
+          - type: network_out
+            arg: eth0
+          - type: ipv4_address
+            arg: eth0
+          - type: throughput_network_in
+            arg: eth0
+          - type: throughput_network_out
+            arg: eth0
+          - type: processor_use
+## Sun2 integration from https://github.com/pnbruckner/ha-sun2 for automating shutters
+  - platform: sun2
+    entity_namespace: !secret city
+    latitude: !secret lat_home
+    longitude: !secret long_home
+    time_zone: Europe/Vienna
+    elevation: 151
+    monitored_conditions:
+      - sunrise
+      - sunset
+      - solar_noon
+      - dusk
+      - dawn
+      - elevation
+      - max_elevation
+#
+#    {% set noon = state_attr('sensor.vienna_solar_noon', 'today') %}
+#    {{ noon is not none and now() > noon }}
+## History Stats to track time at work, bed routine time and gaming time per weekly
+  - platform: history_stats
+    name: Time to sleep
+    entity_id: sensor.dcdedfefd9c2_room_presence
+    state: "Kinderzimmer"
+    type: time
+    start: "{{ now().replace(hour=18, minute=30, second=0) }}"
+    duration:
+      hours: 2
+      minutes: 30
+  - platform: history_stats  
+    name: Work Hours HomeOffice
+    entity_id: sensor.dcdedfefd9c2_room_presence
+    state: "Büro Keller"
+    type: time
+    start: "{{ now().replace(hour=8, minute=0, second=0) }}"
+    end: "{{ now().replace(hour=19, minute=0, second=0) }}"
+
+  - platform: mqtt
+    name: "Inkplate Temperature"
+    state_topic: "home-assistant/inkplate"
+    device_class: temperature
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.temperature }}"
+
+  - platform: mqtt
+    name: "Inkplate Voltage"
+    state_topic: "home-assistant/inkplate"
+    device_class: voltage
+    unit_of_measurement: "V"
+    value_template: "{{ value_json.voltage | round(2) }}"    
+
+
+#Influx DB integration via Docker container running on NAS
+influxdb:
+  host: !secret influx_host
+  port: !secret influx_port
+  database: !secret influx_db
+  username: !secret influx_user
+  password: !secret influx_pw
+
+#Spotify Integration
+spotify:
+  client_id: !secret spotify_client
+  client_secret: !secret spotify_secret
+  
+#Spotify Spotcast Integration via HACS from https://github.com/fondberg/spotcast
+spotcast:
+  sp_dc: !secret spotcast_dc
+  sp_key: !secret spotcast_key
+    
+#Utilitiy Meter for Power/Photovoltaics
+utility_meter:
+  # calculate daily energy consumed from grid (input must be in kWh)
+  grid_consumed_energy_day:
+    source: sensor.energy_real_consumed_fronius_meter_0_192_168_1_75
+    name: Tagesverbrauch
+    cycle: daily
+  # calculate daily energy sold to grid (input must be in kWh)
+  grid_sold_energy_day:
+    source: sensor.energy_real_ac_minus_fronius_meter_0_192_168_1_75
+    name: Eingespeist
+    cycle: daily
+  # calculate weekly energy consumed from grid (input must be in kWh)
+  grid_consumed_energy_week:
+    source: sensor.energy_real_consumed_fronius_meter_0_192_168_1_75
+    cycle: weekly
+  # calculate weekly energy sold to grid (input must be in kWh)
+  grid_sold_energy_week:
+    source: sensor.energy_real_ac_minus_fronius_meter_0_192_168_1_75
+    cycle: weekly
+  # calculate monthly energy consumed from grid (input must be in kWh)
+  grid_consumed_energy_month:
+    source: sensor.energy_real_consumed_fronius_meter_0_192_168_1_75
+    cycle: monthly
+  # calculate monthly energy sold to grid (input must be in kWh)
+  grid_sold_energy_month:
+    source: sensor.energy_real_ac_minus_fronius_meter_0_192_168_1_75
+    cycle: monthly  
+  # calculate yearly energy consumed from grid (input must be in kWh)
+  grid_consumed_energy_year:
+    source: sensor.energy_real_consumed_fronius_meter_0_192_168_1_75
+    cycle: yearly
+  # calculate yearly energy sold to grid (input must be in kWh)
+  grid_sold_energy_year:
+    source: sensor.energy_real_ac_minus_fronius_meter_0_192_168_1_75
+    cycle: yearly
+  # daily solar production in kWh
+  day_solar_produced:
+    source: sensor.energy_day_fronius_power_flow_0_192_168_1_75
+    name: PV Produktion Tag
+    cycle: daily
+  # max House Load (Watts) per year
+  max_house_load:
+    source: sensor.power_grid_fronius_power_flow_0_192_168_1_75
+    name: Maximale bezogene Leistung
+    cycle: yearly
+  # Dryer - daily energy use in kWh
+  tumbledryer_daily_energy_consumed:
+    source: sensor.trockner_electric_consumed_kwh
+    name: Trockner
+    cycle: daily
+  # washing machine - daily energy use in kWh
+  washing_machine_daily_energy_consumed:
+    source: sensor.waschmaschine_electric_consumed_kwh
+    name: Waschmaschine 
+    cycle: daily
+  # Computer Office Michael - daily energy use in kWh
+  computer_office_daily_energy_consumed:
+    source: sensor.computer_kg_electric_consumed_kwh
+    name: Computer Büro
+    cycle: daily
+  # Computer Office Victoria - daily energy use in kWh
+  computer_office_dg_daily_energy_consumed:
+    source: sensor.computer_dg_electric_consumption_kwh
+    name: Büro DG
+    cycle: daily
+  # Wärmepumpe VWF87 Heizung - elektrische Energie
+  vwf87_central_heating_daily_energy_consumed:
+    source: sensor.nonegateway_ll_hmu00_0304_flexotherm_pr_ebus_central_heating_consumed_electrical_power
+    name: Heizung Wärmepumpe
+    cycle: daily
+  # Wärmepumpe VWF87 Kühlung - elektrische Energie
+  vwf87_cooling_daily_energy_consumed:
+    source: sensor.nonegateway_ll_hmu00_0304_flexotherm_pr_ebus_cooling_consumed_electrical_power
+    name: Kühlung Wärmepumpe
+    cycle: daily
+  # Wärmepumpe VWF87 Warmwasser - elektrische Energie
+  vwf87_dhw_daily_energy_consumed:
+    source: sensor.nonegateway_ll_hmu00_0304_flexotherm_pr_ebus_dhw_consumed_electrical_power
+    name: Warmwasser Wärmepumpe
+    cycle: daily

@@ -1,0 +1,123 @@
+- platform: elero
+  covers:
+    kitchen_east:
+        serial_number: AU00JJS2
+        name: 'Küche'
+        channel: 1
+        device_class: venetian blind
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+            - open_tilt
+            - close_tilt
+            - stop_tilt
+            - set_tilt_position
+    terrace_left:
+        serial_number: AU00JJS2
+        name: 'Terrasse Links'
+        channel: 2
+        device_class: venetian blind
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+            - open_tilt
+            - close_tilt
+            - stop_tilt
+            - set_tilt_position
+    terrace_right:
+        serial_number: AU00JJS2
+        name: 'Terrasse Rechts'
+        channel: 3
+        device_class: venetian blind
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+            - open_tilt
+            - close_tilt
+            - stop_tilt
+            - set_tilt_position
+    dining_south:
+        serial_number: AU00JJS2
+        name: 'Esstisch'
+        channel: 4
+        device_class: venetian blind
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+            - open_tilt
+            - close_tilt
+            - stop_tilt
+            - set_tilt_position          
+    couch_south:
+        serial_number: AU00JJS2
+        name: 'Couch'
+        channel: 5
+        device_class: venetian blind
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+            - open_tilt
+            - close_tilt
+            - stop_tilt
+            - set_tilt_position
+    bedroom_parents_east:
+        serial_number: AU00JJS2
+        name: 'Eltern Osten'
+        channel: 6
+        device_class: roller shutter
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+    bedroom_parents_north:
+        serial_number: AU00JJS2
+        name: 'Eltern Nord'
+        channel: 7
+        device_class: roller shutter
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+    playroom_east:
+        serial_number: AU00JJS2
+        name: 'Spielzimmer Osten'
+        channel: 9
+        device_class: roller shutter
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position
+    playroom_south:
+        serial_number: AU00JJS2
+        name: 'Spielzimmer Süden'
+        channel: 8
+        device_class: roller shutter
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position           
+    kids_south:
+        serial_number: AU00JJS2
+        name: 'Kinderzimmer Süden'
+        channel: 10
+        device_class: roller shutter
+        supported_features:
+            - up
+            - down
+            - stop
+            - set_position            
+

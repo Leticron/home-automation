@@ -1,0 +1,269 @@
+- id: '1620994844915'
+  alias: Reminder - Office PC
+  description: Office PC im Keller läuft noch und muss ausgeschaltet werden
+  trigger:
+  - type: power
+    platform: device
+    device_id: 436728f951179b97cdfdac1869191d89
+    entity_id: sensor.power_plug_electric_consumed_w_3
+    domain: sensor
+    above: 15
+  condition:
+  - condition: time
+    after: '22:00'
+  action:
+  - service: notify.mobile_app_mi_10_lite
+    data:
+      message: Office PC läuft noch
+      title: Reminder - PC ausschalten!
+  mode: single
+- id: open_windows_basement_reminder
+  alias: Reminder for open windows in basement
+  trigger:
+  - hours: '20'
+    minutes: '30'
+    platform: time_pattern
+  condition:
+  - condition: state
+    entity_id: group.windows_basement
+    state: 'on'
+  action:
+  - data:
+      message: '{{ dict((states|selectattr(''entity_id'', ''in'', state_attr(''group.windows_basement'',
+        ''entity_id''))|list)|groupby(''state''))[''on'']|map(attribute=''name'')|list|join('',
+        '') }} ist noch offen.'
+      title: Update Kellerfenster
+    service: notify.mobile_app_mi_10_lite
+  mode: single
+- id: '1625489972880'
+  alias: Rollläden schließen am Morgen
+  description: Ostseitiges Schließen der Rollläden
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: 00:10:00
+  condition: []
+  action:
+  - service: cover.close_cover
+    target:
+      entity_id:
+      - cover.eltern_osten
+      - cover.kuche
+      - cover.spielzimmer_osten
+      - cover.terrasse_links
+      - cover.terrasse_rechts
+  mode: single
+- id: '1626470572522'
+  alias: 'Rollläden Sonnenstand schließen und öffnen '
+  description: ''
+  trigger:
+  - platform: time
+    at: Sensor.vienna_solar_noon
+  condition: []
+  action:
+  - service: cover.close_cover
+    target:
+      entity_id:
+      - cover.esstisch
+      - cover.kinderzimmer_suden
+      - cover.spielzimmer_suden
+  - service: cover.open_cover
+    target:
+      entity_id:
+      - cover.spielzimmer_osten
+      - cover.kuche
+      - cover.terrasse_links
+      - cover.terrasse_rechts
+  mode: single
+- id: '1637350693716'
+  alias: Leaving Work
+  description: Michael leaving work
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.mi_10_lite
+    zone: zone.arbeit_michael
+    event: leave
+  condition:
+  - condition: time
+    after: '16:00:00'
+    weekday:
+    - mon
+    - thu
+    - fri
+  - condition: time
+    after: '14:00'
+    weekday:
+    - tue
+    - wed
+  action:
+  - service: notify.mobile_app_vici_s21
+    data:
+      message: 'Michael ist am Heimweg '
+      title: Update
+  mode: single
+- id: '1639157170656'
+  alias: Weihnachtsbeleuchtung am Abend einschalten
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: '0'
+  condition: []
+  action:
+  - service: switch.turn_on
+    target:
+      device_id:
+      - 3364109044e6652885974ab0b821e3c2
+      - 8d277e3c57719c76975a50255cd97236
+  mode: single
+- id: '1639157354795'
+  alias: Weihnachtsbeleuchtung am Tag ausschalten
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: '0'
+  condition: []
+  action:
+  - service: switch.turn_off
+    target:
+      device_id:
+      - 3364109044e6652885974ab0b821e3c2
+      - 8d277e3c57719c76975a50255cd97236
+  mode: single
+- id: '1640513523718'
+  alias: Rollläden Urlaubsmodus Schließen
+  description: Öffnen und schließen nach Sonnenstand
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: '0'
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: person.victoria
+      state: not_home
+    - condition: state
+      entity_id: person.michael
+      state: not_home
+  action:
+  - service: cover.close_cover
+    target:
+      entity_id:
+      - cover.terrasse_rechts
+      - cover.terrasse_links
+      - cover.kuche
+      - cover.esstisch
+      - cover.couch
+      - cover.eltern_nord
+      - cover.eltern_osten
+      - cover.spielzimmer_osten
+      - cover.spielzimmer_suden
+      - cover.kinderzimmer_suden
+  mode: single
+- id: '1640513692182'
+  alias: Rollläden Urlaubsmodus Öffnen
+  description: Öffnen und schließen nach Sonnenstand
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: '0'
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: person.victoria
+      state: not_home
+    - condition: state
+      entity_id: person.michael
+      state: not_home
+  action:
+  - service: cover.open_cover
+    target:
+      entity_id:
+      - cover.terrasse_rechts
+      - cover.terrasse_links
+      - cover.esstisch
+      - cover.kuche
+      - cover.couch
+      - cover.eltern_nord
+      - cover.eltern_osten
+      - cover.spielzimmer_osten
+      - cover.spielzimmer_suden
+      - cover.kinderzimmer_suden
+  mode: single
+- id: '1641569244286'
+  alias: Abfahrtszeiten Push
+  description: ''
+  trigger:
+  - platform: zone
+    entity_id: device_tracker.mi_10_lite
+    zone: zone.konstanziagasse_26a
+    event: enter
+  condition: []
+  action:
+  - service: notify.mobile_app_mi_10_lite
+    data:
+      message: 'Bus Kagran in {{ ((as_timestamp(states(''sensor.konstanziagasse_first_departure_4''))
+        - as_timestamp(now())) / 60)| round(0) }} bzw. {{ ((as_timestamp(states(''sensor.konstanziagasse_next_departure_4''))
+        - as_timestamp(now())) / 60)| round(0) }} min. <br> Bim Aspern in {{ ((as_timestamp(states(''sensor.konstanziagasse_first_departure''))
+        - as_timestamp(now())) / 60)| round(0) }} bzw. {{ ((as_timestamp(states(''sensor.konstanziagasse_next_departure''))
+        - as_timestamp(now())) / 60)| round(0) }} min.  '
+  - service: notify.mobile_app_vici_s21
+    data:
+      message: 'Bus Kagran in {{ ((as_timestamp(states(''sensor.konstanziagasse_first_departure_4''))
+        - as_timestamp(now())) / 60)| round(0) }} bzw. {{ ((as_timestamp(states(''sensor.konstanziagasse_next_departure_4''))
+        - as_timestamp(now())) / 60)| round(0) }} min. <br> Bim Aspern in {{ ((as_timestamp(states(''sensor.konstanziagasse_first_departure''))
+        - as_timestamp(now())) / 60)| round(0) }} bzw. {{ ((as_timestamp(states(''sensor.konstanziagasse_next_departure''))
+        - as_timestamp(now())) / 60)| round(0) }} min.  '
+  mode: single
+- id: '1644173595344'
+  alias: Dnd while putting kids to bed
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sensor.dcdedfefd9c2_room_presence
+    to: Kinderzimmer
+  condition:
+  - condition: time
+    after: '18:30'
+  action:
+  - service: notify.mobile_app_mi_10_lite
+    data:
+      message: command_dnd
+      title: total_silence
+  mode: single
+- id: '1644607860314'
+  alias: Restmüll Feiertage
+  description: verschiebt das Abholdatum um einen Tag falls Entleerung auf Feiertag
+    fällt
+  use_blueprint:
+    path: bruxy70/move_on_holiday.yaml
+    input:
+      garbage_collection_entity: sensor.restmull
+      holiday_entity: calendar.feiertage
+- id: '1644608855805'
+  alias: Gelber Sack Feiertage
+  description: verschiebt das Abholdatum um einen Tag falls Entleerung auf Feiertag
+    fällt
+  use_blueprint:
+    path: bruxy70/move_on_holiday.yaml
+    input:
+      garbage_collection_entity: sensor.gelber_sack
+      holiday_entity: calendar.feiertage
+- id: '1648139017592'
+  alias: Inkplate Charging Warning
+  description: Inkplate Battery runs low on charge and has to be recharged
+  trigger:
+  - platform: state
+    entity_id: sensor.inkplate_voltage
+    attribute: unit_of_measurement
+    to: '2.7'
+  condition: []
+  action:
+  - service: notify.mobile_app_mi_10_lite
+    data:
+      message: Akku dringend aufladen!
+      title: Inkplate Dashboard
+  mode: single

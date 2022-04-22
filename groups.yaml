@@ -1,0 +1,42 @@
+# Group for windows in basement to notify when window is open
+windows_basement:
+  name: Kellerfenster
+  icon: mdi:window-closed-variant
+  entities:
+      - binary_sensor.fibaro_door_window_sensor_2_access_control_window_door_is_open_2 # Fenster Ost - Büro Keller
+      - binary_sensor.fibaro_door_window_sensor_2_access_control_window_door_is_open_3 # Fenster Lager - Lager Keller
+      - binary_sensor.fibaro_door_window_sensor_2_access_control_window_door_is_open   # Fenster Technikraum - Technikraum Keller
+      - binary_sensor.fibaro_door_window_sensor_2_access_control_window_door_is_open_4 # Fenster West - Büro Keller
+      
+      
+windows_east_facing:
+  name: Ostseitige Fenster
+  icon: mdi:window-shutter
+  entities:
+    - cover.kuche
+    - cover.terrasse_links
+    - cover.terrasse_rechts
+    - cover.spielzimmer_osten
+    - cover.eltern_osten
+    
+windows_south_facing:
+  name: Südseitige Fenster
+  icon: mdi:window-shutter
+  entities:
+    - cover.couch
+    - cover.esstisch
+    - cover.spielzimmer_suden
+    - cover.kinderzimmer_suden
+    
+michael_home:
+  name: Michael@Home
+  entities:
+    - device_tracker.mi_10_lite
+    - device_tracker.dcdedfefd9c2_tracker
+    - device_tracker.takeda_michael
+    
+victoria_home:
+  name: Victoria@Home
+  entities:
+    - device_tracker.s21_von_victoria
+    - device_tracker.galaxy_a50

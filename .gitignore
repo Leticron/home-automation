@@ -1,0 +1,15 @@
+# Ignore all folders
+.cloud/
+.storage/
+blueprints/
+deps/
+image/
+node-red/
+themes/
+custom_components/
+tts/
+www/
+elero_unittest.py
+test_elero.py
+secrets.yaml
+home-assistant*.*
