@@ -237,7 +237,7 @@ influxdb:
   token: !secret influx_token
   organization: !secret influx_org
   bucket: !secret influx_bucket
-  verify_ssl: false
+  ssl: false
   
 
 #Spotify Integration

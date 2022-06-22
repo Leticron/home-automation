@@ -5,9 +5,13 @@
   - type: power
     platform: device
     device_id: 436728f951179b97cdfdac1869191d89
-    entity_id: sensor.power_plug_electric_consumed_w_3
+    entity_id: sensor.computer_electric_consumption_w
     domain: sensor
-    above: 15
+    above: 70
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   condition:
   - condition: time
     after: '22:00'
