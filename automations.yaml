@@ -12,7 +12,7 @@
   - condition: time
     after: '22:00'
   action:
-  - service: notify.mobile_app_mi_10_lite
+  - service: notify.mobile_app_michael_mobile
     data:
       message: Office PC läuft noch
       title: Reminder - PC ausschalten!
@@ -203,7 +203,7 @@
     event: enter
   condition: []
   action:
-  - service: notify.mobile_app_mi_10_lite
+  - service: notify.mobile_app_michael_mobile
     data:
       message: 'Bus Kagran in {{ ((as_timestamp(states(''sensor.konstanziagasse_first_departure_4''))
         - as_timestamp(now())) / 60)| round(0) }} bzw. {{ ((as_timestamp(states(''sensor.konstanziagasse_next_departure_4''))
@@ -229,7 +229,7 @@
   - condition: time
     after: '18:30'
   action:
-  - service: notify.mobile_app_mi_10_lite
+  - service: notify.mobile_app_michael_mobile
     data:
       message: command_dnd
       title: total_silence
@@ -262,7 +262,7 @@
     to: '2.7'
   condition: []
   action:
-  - service: notify.mobile_app_mi_10_lite
+  - service: notify.mobile_app_michael_mobile
     data:
       message: Akku dringend aufladen!
       title: Inkplate Dashboard

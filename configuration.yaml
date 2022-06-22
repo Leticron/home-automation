@@ -36,7 +36,6 @@ http:
 tts:
   - platform: google_translate
     cache: true
-    base_url: !secret tts_url
     service_name: google_say
 
 group: !include groups.yaml
@@ -214,14 +213,15 @@ sensor:
     start: "{{ now().replace(hour=8, minute=0, second=0) }}"
     end: "{{ now().replace(hour=19, minute=0, second=0) }}"
 
-  - platform: mqtt
+mqtt:
+  sensor:
     name: "Inkplate Temperature"
     state_topic: "home-assistant/inkplate"
     device_class: temperature
     unit_of_measurement: "°C"
     value_template: "{{ value_json.temperature }}"
 
-  - platform: mqtt
+  sensor:
     name: "Inkplate Voltage"
     state_topic: "home-assistant/inkplate"
     device_class: voltage
@@ -237,12 +237,13 @@ influxdb:
   token: !secret influx_token
   organization: !secret influx_org
   bucket: !secret influx_bucket
+  verify_ssl: false
   
 
 #Spotify Integration
-spotify:
-  client_id: !secret spotify_client
-  client_secret: !secret spotify_secret
+#spotify:
+#  client_id: !secret spotify_client
+#  client_secret: !secret spotify_secret
   
 #Spotify Spotcast Integration via HACS from https://github.com/fondberg/spotcast
 spotcast:
