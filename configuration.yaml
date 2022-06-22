@@ -231,11 +231,13 @@ sensor:
 
 #Influx DB integration via Docker container running on NAS
 influxdb:
+  api_version: 2
   host: !secret influx_host
   port: !secret influx_port
-  database: !secret influx_db
-  username: !secret influx_user
-  password: !secret influx_pw
+  token: !secret influx_token
+  organization: !secret influx_org
+  bucket: !secret influx_bucket
+  
 
 #Spotify Integration
 spotify:
