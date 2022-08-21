@@ -238,17 +238,24 @@ influxdb:
   organization: !secret influx_org
   bucket: !secret influx_bucket
   ssl: false
-  
 
 #Spotify Integration
-#spotify:
+#spotify:   //depricated with 2022.8 release, configuration via Lovelace
 #  client_id: !secret spotify_client
 #  client_secret: !secret spotify_secret
-  
+
+
 #Spotify Spotcast Integration via HACS from https://github.com/fondberg/spotcast
 spotcast:
   sp_dc: !secret spotcast_dc
   sp_key: !secret spotcast_key
+  accounts:
+    julsim:
+      sp_dc: !secret spotcast_julian_dc
+      sp_key: !secret spotcast_julian_key
+    metallicat:
+      sp_dc: !secret spotcast_victoria_dc
+      sp_key: !secret spotcast_victoria_key
     
 #Utilitiy Meter for Power/Photovoltaics
 utility_meter:

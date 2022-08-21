@@ -1,0 +1,8 @@
+sonos_say:
+  alias: Sonos Say
+  sequence:
+  - service: sonos.snapshot
+    data:
+      entity_id: media_player.wohnzimmer
+  mode: parallel
+  icon: mdi:speaker-wireless
